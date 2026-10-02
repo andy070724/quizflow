@@ -1,0 +1,31 @@
+# Create a Blueprint from this repository. Choose plans in Render's dashboard.
+# Set APP_ORIGIN to your final public HTTPS URL (no trailing slash).
+services:
+  - type: web
+    name: quizflow
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_ORIGIN
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: quizflow-db
+          property: connectionString
+      - key: AI_PROVIDER
+        value: demo
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: TRUST_PROXY
+        value: "1"
+databases:
+  - name: quizflow-db
+    databaseName: quizflow
+    user: quizflow
+    ipAllowList: []

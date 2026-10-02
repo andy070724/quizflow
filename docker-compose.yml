@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: quizflow
+      POSTGRES_PASSWORD: quizflow
+      POSTGRES_DB: quizflow
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - quizflow_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quizflow -d quizflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    profiles: ["full"]
+    build: .
+    env_file: server/.env
+    environment:
+      # Compiled assets with a localhost-only HTTP cookie exception.
+      # Public hosting must remove LOCAL_DOCKER and use a HTTPS APP_ORIGIN.
+      NODE_ENV: production
+      LOCAL_DOCKER: "true"
+      DATABASE_URL: postgresql://quizflow:quizflow@db:5432/quizflow
+      DATABASE_SSL: "false"
+      PORT: 3000
+      APP_ORIGIN: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  quizflow_pg:
